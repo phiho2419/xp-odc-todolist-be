@@ -9,14 +9,29 @@ import {
 } from "../controllers/todolist.controller";
 import { authenticate } from "../middlewares/verify-token.middleware";
 import { apiResponse } from "../utils";
+import { body, validationResult } from "express-validator";
 const todoRouter = express.Router();
 
 todoRouter.post(
   "/addToDo",
   authenticate,
+  [body("title", "Invalid does not Empty").not().isEmpty()],
   async (req: Request, res: Response) => {
     try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(RESPONSE_CODE.BAD_REQUEST).json(
+          apiResponse({
+            status: RESPONSE_CODE.BAD_REQUEST,
+            message: "",
+            error: errors,
+          })
+        );
+      }
+
       const { title, description } = req.body;
+      if (!title) {
+      }
       const newTodo = { title, description, status: "todo" };
       await createTodo(newTodo);
       res.status(RESPONSE_CODE.OK).send(
@@ -27,11 +42,11 @@ todoRouter.post(
         })
       );
     } catch (error) {
-      res.status(RESPONSE_CODE.BAD_REQUEST).send(
+      res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).send(
         apiResponse({
-          status: RESPONSE_CODE.BAD_REQUEST,
+          status: RESPONSE_CODE.INTERNAL_SERVER_ERROR,
           error: error,
-          message: "Add Todo fail !",
+          message: "INTERNAL_SERVER_ERROR",
         })
       );
     }
@@ -52,11 +67,11 @@ todoRouter.get(
         })
       );
     } catch (error) {
-      res.status(RESPONSE_CODE.BAD_REQUEST).send(
+      res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).send(
         apiResponse({
-          status: RESPONSE_CODE.BAD_REQUEST,
+          status: RESPONSE_CODE.INTERNAL_SERVER_ERROR,
           error: error,
-          message: "Get fail !",
+          message: "INTERNAL_SERVER_ERROR",
         })
       );
     }
@@ -70,9 +85,9 @@ todoRouter.get(
     try {
       const movie = await getTodoById(req.params.id);
       if (!movie) {
-        return res.status(RESPONSE_CODE.BAD_REQUEST).send(
+        return res.status(RESPONSE_CODE.NOT_FOUND).send(
           apiResponse({
-            status: RESPONSE_CODE.BAD_REQUEST,
+            status: RESPONSE_CODE.NOT_FOUND,
             message: "Not found !",
           })
         );
@@ -85,9 +100,9 @@ todoRouter.get(
         })
       );
     } catch (error) {
-      res.status(RESPONSE_CODE.BAD_REQUEST).send(
+      res.status(RESPONSE_CODE.NOT_FOUND).send(
         apiResponse({
-          status: RESPONSE_CODE.BAD_REQUEST,
+          status: RESPONSE_CODE.NOT_FOUND,
           message: "Not found !",
           error,
         })
@@ -105,9 +120,9 @@ todoRouter.delete(
 
       const movie = await getTodoById(id);
       if (!movie) {
-        return res.status(RESPONSE_CODE.BAD_REQUEST).send(
+        return res.status(RESPONSE_CODE.NOT_FOUND).send(
           apiResponse({
-            status: RESPONSE_CODE.BAD_REQUEST,
+            status: RESPONSE_CODE.NOT_FOUND,
             message: "Not found !",
           })
         );
@@ -120,10 +135,10 @@ todoRouter.delete(
         })
       );
     } catch (error) {
-      res.status(RESPONSE_CODE.BAD_REQUEST).send(
+      res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).send(
         apiResponse({
-          status: RESPONSE_CODE.BAD_REQUEST,
-          message: "Not found !",
+          status: RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+          message: "INTERNAL_SERVER_ERROR",
           error,
         })
       );
@@ -140,9 +155,9 @@ todoRouter.put(
 
       const movie = await getTodoById(id);
       if (!movie) {
-        return res.status(RESPONSE_CODE.BAD_REQUEST).send(
+        return res.status(RESPONSE_CODE.NOT_FOUND).send(
           apiResponse({
-            status: RESPONSE_CODE.BAD_REQUEST,
+            status: RESPONSE_CODE.NOT_FOUND,
             message: "Todo not found !",
           })
         );
@@ -163,11 +178,11 @@ todoRouter.put(
         })
       );
     } catch (error) {
-      res.status(RESPONSE_CODE.BAD_REQUEST).send(
+      res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).send(
         apiResponse({
-          status: RESPONSE_CODE.BAD_REQUEST,
+          status: RESPONSE_CODE.INTERNAL_SERVER_ERROR,
           error,
-          message: "Update fail !",
+          message: "INTERNAL_SERVER_ERROR",
         })
       );
     }
